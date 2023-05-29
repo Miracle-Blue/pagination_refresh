@@ -54,16 +54,18 @@ class _GridViewExampleState extends State<GridViewExample> {
   }
 
   void getData() async {
-    setState(() {
-      isLoading = true;
-    });
-    Network().get(Api.baseUrl, Api.user.path, query: {"limit": "$limit", "skip": "${page * limit}"}).then((value) {
+    setState(() => isLoading = true);
+
+    Network().get(
+      Api.baseUrl,
+      Api.user.path,
+      query: {"limit": "$limit", "skip": "${page * limit}"},
+    ).then((value) {
       final baseResponse = Network().parseUsers(value);
       total = baseResponse.total;
       items.addAll(baseResponse.users);
-      setState(() {
-        isLoading = false;
-      });
+
+      setState(() => isLoading = false);
     });
   }
 
@@ -83,40 +85,46 @@ maxScrollExtent - ${scrollController.position.maxScrollExtent}
   }
 
   @override
-  Widget build(BuildContext context) => GridView.builder(
-        controller: scrollController,
-        padding: const EdgeInsets.all(10.0),
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 300,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          mainAxisExtent: 300,
-        ),
-        itemCount: items.length + 1,
-        itemBuilder: (context, i) => (i == items.length && i != total)
-            ? const Center(
-                child: CircularProgressIndicator.adaptive(),
-              )
-            : (i == items.length && i == total)
-                ? const SizedBox.shrink()
-                : ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: ColoredBox(
-                      color: Colors.primaries[i % 18],
-                      child: GridTile(
-                        header: Image.network(items[i].image ?? ''),
-                        child: Align(
-                          alignment: const Alignment(0, .5),
-                          child: Text(
-                            "${items[i].firstName} ${items[i].lastName}",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ),
+  Widget build(BuildContext context) => Stack(
+        children: [
+          GridView.builder(
+            controller: scrollController,
+            padding: const EdgeInsets.all(10.0),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 300,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              mainAxisExtent: 300,
+            ),
+            itemCount: items.length,
+            itemBuilder: (context, i) => ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: ColoredBox(
+                color: Colors.primaries[i % 18],
+                child: GridTile(
+                  header: Image.network(items[i].image ?? ''),
+                  child: Align(
+                    alignment: const Alignment(0, .5),
+                    child: Text(
+                      "${items[i].firstName} ${items[i].lastName}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
                       ),
                     ),
                   ),
+                ),
+              ),
+            ),
+          ),
+          if (isLoading)
+            const Align(
+              alignment: Alignment(0, .9),
+              child: CircularProgressIndicator(
+                color: Colors.red,
+                strokeWidth: 5,
+              ),
+            ),
+        ],
       );
 }
