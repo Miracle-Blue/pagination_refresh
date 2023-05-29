@@ -20,8 +20,8 @@ class Network {
   // Methods
 
   /// Get
-  Future<String> get(String baseUrl, String path, [int? id]) async {
-    final url = Uri.https(baseUrl, "$path${id != null ? "/$id" : ""}");
+  Future<String> get(String baseUrl, String path, {int? id, Map<String, Object?>? query}) async {
+    final url = Uri.https(baseUrl, "$path${id != null ? "/$id" : ""}", query);
     final request = await _network.getUrl(url);
     request.headers.contentType = ContentType("application", "json", charset: "utf-8");
     final response = await request.close();
@@ -84,10 +84,10 @@ class Network {
     return result;
   }
 
-  List<User> parseAllUsers(String data) {
+  BaseResponse parseUsers(String data) {
     BaseResponse response = BaseResponse.fromJson(jsonDecode(data));
 
-    return response.users;
+    return response;
   }
 
   List<Post> parseAllPost(String data) {
