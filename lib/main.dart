@@ -11,14 +11,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
         theme: ThemeData(useMaterial3: true),
-        home: Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            backgroundColor: Colors.green,
-            title: const Text("GridView"),
-          ),
-          body: const GridViewExample(),
-        ),
+        home: const GridViewExample(),
       );
 }
 
@@ -84,47 +77,79 @@ maxScrollExtent - ${scrollController.position.maxScrollExtent}
     });
   }
 
+  Future<void> _refresh() async {
+    await scrollController.animateTo(
+      0,
+      duration: const Duration(seconds: 2),
+      curve: Curves.linear,
+    );
+
+    page = 0;
+    items = [];
+
+    getData();
+  }
+
   @override
-  Widget build(BuildContext context) => Stack(
-        children: [
-          GridView.builder(
-            controller: scrollController,
-            padding: const EdgeInsets.all(10.0),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 300,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-              mainAxisExtent: 300,
-            ),
-            itemCount: items.length,
-            itemBuilder: (context, i) => ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: ColoredBox(
-                color: Colors.primaries[i % 18],
-                child: GridTile(
-                  header: Image.network(items[i].image ?? ''),
-                  child: Align(
-                    alignment: const Alignment(0, .5),
-                    child: Text(
-                      "${items[i].firstName} ${items[i].lastName}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: Colors.green,
+          title: const Text("GridView"),
+        ),
+        body: RefreshIndicator(
+          onRefresh: _refresh,
+          child: Stack(
+            children: [
+              GridView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.all(10.0),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 300,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  mainAxisExtent: 300,
+                ),
+                itemCount: items.length,
+                itemBuilder: (context, i) => ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: ColoredBox(
+                    color: Colors.primaries[i % 18],
+                    child: GridTile(
+                      header: Image.network(items[i].image ?? ''),
+                      child: Align(
+                        alignment: const Alignment(0, .5),
+                        child: Text(
+                          "${items[i].firstName} ${items[i].lastName}",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
+              if (isLoading)
+                const Align(
+                  alignment: Alignment(0, .9),
+                  child: CircularProgressIndicator(
+                    color: Colors.red,
+                    strokeWidth: 5,
+                  ),
+                ),
+            ],
           ),
-          if (isLoading)
-            const Align(
-              alignment: Alignment(0, .9),
-              child: CircularProgressIndicator(
-                color: Colors.red,
-                strokeWidth: 5,
-              ),
-            ),
-        ],
+        ),
+        floatingActionButton:
+            (total != 0 && items.length == total && scrollController.position.pixels == scrollController.position.maxScrollExtent)
+                ? FloatingActionButton(
+                    onPressed: _refresh,
+                    child: const Icon(
+                      Icons.refresh,
+                    ),
+                  )
+                : null,
       );
 }
